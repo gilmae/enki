@@ -1,4 +1,3 @@
-require "../enki"
 require 'twitter'
 require 'json'
 require 'open-uri'
