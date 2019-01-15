@@ -3,7 +3,7 @@ require 'json'
 require 'open-uri'
 
     def get_config
-        filename = "#{File.basename(__FILE__)}.config"
+        filename = File.expand_path(File.join("~", ".enki", "#{File.basename(__FILE__)}.config"))
         return {:next_point=>0} unless File.exists?(filename)
         
         config = File.open(filename, "r") { |f| 
@@ -18,7 +18,7 @@ require 'open-uri'
     end
     
     def store_config config
-        filename = "#{File.basename(__FILE__)}.config"
+        filename = File.expand_path(File.join("~", ".enki", "#{File.basename(__FILE__)}.config"))
         File.open(filename, "w") { |f| 
             f << config.to_json
         }

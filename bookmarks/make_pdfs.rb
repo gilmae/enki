@@ -7,7 +7,8 @@ require 'timeout'
 
 
 def get_config
-    filename = "#{File.basename(__FILE__)}.config"
+    filename = File.expand_path(File.join("~", ".enki", "#{File.basename(__FILE__)}.config"))
+
     return {:next_point=>0} unless File.exists?(filename)
     
     config = File.open(filename, "r") { |f| 
@@ -22,7 +23,7 @@ def get_config
 end
 
 def store_config config
-    filename = "#{File.basename(__FILE__)}.config"
+    filename = File.expand_path(File.join("~", ".enki", "#{File.basename(__FILE__)}.config"))
     File.open(filename, "w") { |f| 
         f << config.to_json
     }
@@ -53,9 +54,26 @@ def process_pin pin
     date_pinned = Time.parse(pin["dt"])
     path = "backups/#{date_pinned.year}/#{date_pinned.month}/#{date_pinned.day}/#{date_pinned.strftime("%H%M%S")}"
     FileUtils.mkdir_p path
-    exec_with_timeout("/Applications/Google\\ Chrome\\ Canary.app/Contents/MacOS/Google\\ Chrome\\ Canary --headless --disable-gpu --print-to-pdf=#{path}/#{pin["description"].gsub(/\s/,"_") }.pdf #{pin["url"]}",30)
+    filename = sanitize_filename(pin["description"])
+    exec_with_timeout("/Applications/Google\\ Chrome\\ Canary.app/Contents/MacOS/Google\\ Chrome\\ Canary --headless --disable-gpu --print-to-pdf=#{path}/#{filename}.pdf #{pin["url"]}",30)
     
 end
+
+def sanitize_filename(filename)
+    # Split the name when finding a period which is preceded by some
+    # character, and is followed by some character other than a period,
+    # if there is no following period that is followed by something
+    # other than a period (yeah, confusing, I know)
+    fn = filename.split /(?<=.)\.(?=[^.])(?!.*\.[^.])/m
+  
+    # We now have one or two parts (depending on whether we could find
+    # a suitable period). For each of these parts, replace any unwanted
+    # sequence of characters with an underscore
+    fn.map! { |s| s.gsub /[^a-z0-9\-]+/i, '_' }
+  
+    # Finally, join the parts with a period and return the result
+    return fn.join '.'
+  end
 
 config = get_config
 

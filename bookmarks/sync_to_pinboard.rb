@@ -7,7 +7,8 @@ include Pinboard
 
 
 def get_config
-    filename = "#{File.basename(__FILE__)}.config"
+    filename = File.expand_path(File.join("~", ".enki", "#{File.basename(__FILE__)}.config"))
+    
     return {:next_point=>0} unless File.exists?(filename)
     
     config = File.open(filename, "r") { |f| 
@@ -22,7 +23,7 @@ def get_config
 end
 
 def store_config config
-    filename = "#{File.basename(__FILE__)}.config"
+    filename = File.expand_path(File.join("~", ".enki", "#{File.basename(__FILE__)}.config"))
     File.open(filename, "w") { |f| 
         f << config.to_json
     }
