@@ -1,6 +1,8 @@
 require 'twitter'
 require 'json'
 require 'open-uri'
+require 'tempfile'
+require 'uri'
 
     def get_config
         filename = File.expand_path(File.join("~", ".enki", "#{File.basename(__FILE__)}.config"))
@@ -32,6 +34,18 @@ require 'open-uri'
         }.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
     end
 
+    def save_to_tempfile(url)
+        uri = URI.parse(url)
+        Net::HTTP.start(uri.host, uri.port) do |http|
+          resp = http.get(uri.path)
+          file = Tempfile.new('foo')
+          file.binmode
+          file.write(resp.body)
+          file.flush
+          file
+        end
+      end
+
 config = get_config
 
 data = get_points config[:next_point]
@@ -57,9 +71,24 @@ begin
             created_at = DateTime.parse(r["created_at"])
             
             tweet = entry["content"]
+            photos = []
+            if entry.key? "photo"
+                photos = [entry["photo"]].flatten.map{|ph| save_to_tempfile(ph)}
+            end
 
-            puts "Syncing #{tweet}"
-            twitter.update(tweet)
+            if photos.empty?
+                puts "Syncing #{tweet}"
+
+                twitter.update(tweet)
+            else
+                puts "Syncing #{tweet} with #{photos.length} images"
+                photos.each { |f| 
+                    puts f.path
+                } 
+                
+                twitter.update_with_media(tweet, photos) if !photos.empty?
+            end
+
             config[:next_point] = working_on
         }
         config[:next_point] = working_on + 1
