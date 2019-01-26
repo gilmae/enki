@@ -1,5 +1,6 @@
 require 'json'
 require 'open-uri'
+require 'mastodon'
 
     def initialize_config
         p "Initializing config"
@@ -51,7 +52,10 @@ config = get_config
 data = get_points config[:next_point]
 working_on = config[:next_point]
 
-mastodon = Mastodon::REST::Client.new(config[:mastodon])
+mastodon = Mastodon::REST::Client.new(
+    base_url: config[:mastodon]["base_url"], 
+    bearer_token: config[:mastodon]["bearer_token"]
+)
 
 begin
     while (!data[:records].empty?)
