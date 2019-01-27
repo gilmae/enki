@@ -3,6 +3,7 @@ require 'open-uri'
 require 'mastodon'
 require 'tempfile'
 require 'uri'
+require 'http'
 
     def initialize_config
         p "Initializing config"
@@ -87,22 +88,21 @@ begin
             tweet = entry["content"]
             photo_ids = []
             if entry.key? "photo"
-                photos = [entry["photo"]].flatten#.map{|ph| save_to_tempfile(ph)}
+                photos = [entry["photo"]].flatten.map{|ph| HTTP::FormData::File.new(save_to_tempfile(ph) ) }
                 
                 # Should be uploading media, but the mastodon gem keeps failing.
                 # So just adding the links on for now
-                # photo_ids = photos.map { |p|
-                #     puts "Uploading #{p.path}"
-                #     mastodon.upload_media(p).id
-                # }
-
-                tweet = "#{tweet}\n#{photos.join("\n")}"
+                 photo_ids = photos.map { |p|
+                     puts "Uploading file"
+                     mastodon.upload_media(p).id
+                 }
+                 puts "Syncing #{tweet}\n\twith media: #{photo_ids.join(", ")}"
+                 #mastodon.create_status(tweet, photo_ids)
+            else
+                puts "Syncing #{tweet}"
+                #mastodon.create_status(tweet)
             end
 
-            puts photo_ids
-
-            puts "Syncing #{tweet}"
-            mastodon.create_status(tweet)
             config[:next_point] = working_on
         }
         config[:next_point] = working_on + 1

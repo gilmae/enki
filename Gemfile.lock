@@ -1,3 +1,12 @@
+GIT
+  remote: git://github.com/gilmae/mastodon-api.git
+  revision: 0680773fd0c8f817f21981817b2b6d802af4f21c
+  branch: f-FixMedia
+  specs:
+    mastodon-api (1.1.1.fork)
+      addressable (~> 2.4)
+      http (~> 2.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -18,9 +27,6 @@ GEM
       domain_name (~> 0.5)
     http-form_data (1.0.3)
     http_parser.rb (0.6.0)
-    mastodon-api (1.1.0)
-      addressable (~> 2.4)
-      http (~> 2.0)
     memoizable (0.4.2)
       thread_safe (~> 0.3, >= 0.3.1)
     multipart-post (2.0.0)
@@ -46,8 +52,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  http-form_data
-  mastodon-api
+  mastodon-api!
   twitter
 
 BUNDLED WITH
