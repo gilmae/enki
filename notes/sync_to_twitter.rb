@@ -1,8 +1,8 @@
 require 'twitter'
 require 'json'
 require 'open-uri'
-require 'tempfile'
 require 'uri'
+require 'digest'
 
     def get_config
         filename = File.expand_path(File.join("~", ".enki", "#{File.basename(__FILE__)}.config"))
@@ -36,14 +36,16 @@ require 'uri'
 
     def save_to_tempfile(url)
         uri = URI.parse(url)
+        name = uri.path.split("/").last
+        filepath = "/tmp/#{name}"
         Net::HTTP.start(uri.host, uri.port) do |http|
           resp = http.get(uri.path)
-          file = Tempfile.new('foo')
-          file.binmode
-          file.write(resp.body)
-          file.flush
-          file
+          File.open(filepath, "wb") { |file| 
+            file.write(resp.body)
+          }
         end
+
+        filepath
       end
 
 config = get_config
@@ -73,7 +75,7 @@ begin
             tweet = entry["content"]
             photos = []
             if entry.key? "photo"
-                photos = [entry["photo"]].flatten.map{|ph| save_to_tempfile(ph)}
+                photos = [entry["photo"]].flatten.map{|ph| File.new(save_to_tempfile(ph))}
             end
 
             if photos.empty?
