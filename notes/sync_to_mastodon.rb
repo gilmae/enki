@@ -1,6 +1,8 @@
 require 'json'
 require 'open-uri'
 require 'mastodon'
+require 'tempfile'
+require 'uri'
 
     def initialize_config
         p "Initializing config"
@@ -47,6 +49,18 @@ require 'mastodon'
         }["point"]
     end
 
+    def save_to_tempfile(url)
+        uri = URI.parse(url)
+        Net::HTTP.start(uri.host, uri.port) do |http|
+          resp = http.get(uri.path)
+          file = Tempfile.new('foo')
+          file.binmode
+          file.write(resp.body)
+          file.flush
+          file
+        end
+      end
+
 config = get_config
 
 data = get_points config[:next_point]
@@ -69,6 +83,21 @@ begin
             created_at = DateTime.parse(r["created_at"])
             
             tweet = entry["content"]
+            photo_ids = []
+            if entry.key? "photo"
+                photos = [entry["photo"]].flatten#.map{|ph| save_to_tempfile(ph)}
+                
+                # Should be uploading media, but the mastodon gem keeps failing.
+                # So just adding the links on for now
+                # photo_ids = photos.map { |p|
+                #     puts "Uploading #{p.path}"
+                #     mastodon.upload_media(p).id
+                # }
+
+                tweet = "#{tweet}\n#{photos.join("\n")}"
+            end
+
+            puts photo_ids
 
             puts "Syncing #{tweet}"
             mastodon.create_status(tweet)
@@ -78,5 +107,5 @@ begin
         data = get_points config[:next_point]
     end
 ensure
-    store_config config
+    #store_config config
 end
