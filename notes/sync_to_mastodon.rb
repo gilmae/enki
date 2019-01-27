@@ -51,14 +51,16 @@ require 'uri'
 
     def save_to_tempfile(url)
         uri = URI.parse(url)
+        name = uri.path.split("/").last
+        filepath = "/tmp/#{name}"
         Net::HTTP.start(uri.host, uri.port) do |http|
           resp = http.get(uri.path)
-          file = Tempfile.new('foo')
-          file.binmode
-          file.write(resp.body)
-          file.flush
-          file
+          File.open(filepath, "wb") { |file| 
+            file.write(resp.body)
+          }
         end
+
+        filepath
       end
 
 config = get_config
@@ -107,5 +109,5 @@ begin
         data = get_points config[:next_point]
     end
 ensure
-    #store_config config
+    store_config config
 end
