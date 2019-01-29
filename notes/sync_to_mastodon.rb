@@ -97,7 +97,7 @@ begin
                      mastodon.upload_media(p).id
                  }
                  puts "Syncing #{tweet}\n\twith media: #{photo_ids.join(", ")}"
-                 mastodon.create_status(tweet, photo_ids)
+                 mastodon.create_status(tweet, nil, photo_ids)
             else
                 puts "Syncing #{tweet}"
                 mastodon.create_status(tweet)
