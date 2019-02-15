@@ -24,18 +24,4 @@ module Enki
       f << config.to_json
     }
   end
-
-  def self.save_to_tempfile(url)
-    uri = URI.parse(url)
-    name = uri.path.split("/").last
-    filepath = "/tmp/#{name}"
-    Net::HTTP.start(uri.host, uri.port) do |http|
-      resp = http.get(uri.path)
-      File.open(filepath, "wb") { |file|
-        file.write(resp.body)
-      }
-    end
-
-    filepath
-  end
 end

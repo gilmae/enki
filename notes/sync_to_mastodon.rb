@@ -4,6 +4,7 @@ BASE_DIR = File.expand_path(File.join(File.dirname(__FILE__), ".."))
 
 require("#{BASE_DIR}/enki.rb")
 require("#{BASE_DIR}/enbilulu.rb")
+require("#{BASE_DIR}/files.rb")
 
 CONFIG_NAME = "#{File.basename(__FILE__)}.config"
 
@@ -32,7 +33,7 @@ begin
       tweet = entry["content"]
       photo_ids = []
       if entry.key? "photo"
-        photos = [entry["photo"]].flatten.map { |ph| HTTP::FormData::File.new(Enki.save_to_tempfile(ph)) }
+        photos = [entry["photo"]].flatten.map { |ph| HTTP::FormData::File.new(Files.save_to_tempfile(ph)) }
 
         # Should be uploading media, but the mastodon gem keeps failing.
         # So just adding the links on for now
