@@ -1,4 +1,5 @@
 require "time"
+require "octokit"
 
 BASE_DIR = File.expand_path(File.join(File.dirname(__FILE__), ".."))
 
@@ -10,8 +11,10 @@ require("./blog")
 CONFIG_NAME = "#{File.basename(__FILE__)}.config"
 
 config = Enki.get_config(CONFIG_NAME) {
-  {:next_point => 0} #Enbilulu.get_starting_point("end")}
+  {:next_point => Enbilulu.get_starting_point("end")}
 }
+
+octokit_client = Octokit::Client.new(:access_token => config[:octokit_token])
 
 data = Enbilulu.get_points config[:next_point]
 working_on = config[:next_point]
@@ -36,16 +39,20 @@ begin
 
       post.categories = categories
       post.allow_comments = false
-      post.link = entry["bookmark-of"] if entry["bookmark-of"]
+      if entry["bookmark-of"]
+        post.link = entry["bookmark-of"]
 
-      post.body = "#{post.body}<!--more-->" if entry["bookmark-of"]
-      post.title = "🔖 #{post.title}" if entry["bookmark-of"]
+        post.body = "#{post.body}<!--more-->"
+        post.title = "🔖 #{post.title}"
+      end
+
       name, contents = post.to_jekyll "post"
-      temp_save_path = File.join("/", "tmp", name)
 
-      File.open(temp_save_path, "wb") { |file|
-        file.write(contents)
-      }
+      octokit_client.create_contents("gilmae/blog.avocadia.net",
+                                     "_posts/#{name}",
+                                     "Adding post",
+                                     contents)
+
       config[:next_point] = working_on
     }
     config[:next_point] = working_on + 1
