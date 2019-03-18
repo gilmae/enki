@@ -33,10 +33,10 @@ begin
 
       created_at = DateTime.parse(r["created_at"])
 
-      tweet = entry["content"]
+      tweet = entry["content"].chomp
 
       next if tweet.length > 280
- 
+
       photos = []
       if entry.key? "photo"
         photos = [entry["photo"]].flatten.map { |ph| File.new(Files.save_to_tempfile(ph)) }
