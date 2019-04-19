@@ -7,5 +7,5 @@ git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
 # gem "rails"
 
 gem 'twitter'
-gem 'mastodon-api', :git => "git://github.com/gilmae/mastodon-api.git", :branch => "f-FixMedia"
+gem 'mastodon-api', '~> 2.0'
 gem 'octokit'
